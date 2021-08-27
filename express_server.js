@@ -34,6 +34,11 @@ app.get("/about", function (req, res) {
 });
 // -------------------------------
 
+// GET Route for form
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 // route handler for /urls
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
