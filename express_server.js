@@ -15,7 +15,12 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// another page
+// /urls.json - another page - routing for urlDatabase object
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+// /hello - another page - routing with HTML
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
