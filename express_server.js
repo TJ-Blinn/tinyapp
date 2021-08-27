@@ -19,7 +19,7 @@ app.get("/", function (req, res) {
     { name: "Tux", organization: "Linux", birth_year: 1996 },
     { name: "Moby Dock", organization: "Docker", birth_year: 2013 },
   ];
-  let tagline = "No programming concept is complete without a cute animal mascot.";
+  const tagline = "No programming concept is complete without a cute animal mascot.";
 
   res.render("pages/index", {
     // res.render() will look in a views folder for the view.
@@ -33,6 +33,20 @@ app.get("/about", function (req, res) {
   res.render("pages/about");
 });
 // -------------------------------
+
+// route handler for /urls
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
+// route handler for /urls_show
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
+  // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
+
+  res.render("urls_show", templateVars);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
