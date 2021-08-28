@@ -98,3 +98,11 @@ app.get("/u/:shortURL", (req, res) => {
     //res.redirect(longURL);
   }
 });
+/*
+Test edge cases such as:
+
+    What would happen if a client requests a non-existent shortURL?
+    What happens to the urlDatabase when the server is restarted?
+    What type of status code do our redirects have? What does this status code mean?
+
+*/
