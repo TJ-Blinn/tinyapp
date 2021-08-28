@@ -70,9 +70,31 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// POST request
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' to front-end (we will replace this)
+  let randoURL = generateRandomString(5);
+
+  urlDatabase[randoURL] = req.body.longURL; // when long url is entered on website, is received req.body.longURL; (url_new page === name)
+  res.redirect("/urls");
 });
 
-function generateRandomString() {}
+// 5 character string composed of characters picked randomly for shortURL
+const generateRandomString = function (length) {
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+// requests to the endpoint "/u/:shortURL" will redirect to its longURL
+app.get("/u/:shortURL", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    let fullURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(fullURL);
+    //res.redirect(longURL);
+  }
+});
