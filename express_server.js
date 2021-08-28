@@ -11,7 +11,7 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
+  "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 // -------------------------------
@@ -92,12 +92,19 @@ const generateRandomString = function (length) {
 
 // requests to the endpoint "/u/:shortURL" will redirect to its longURL
 app.get("/u/:shortURL", (req, res) => {
+  
+  console.log(req.params);
   if (urlDatabase[req.params.shortURL]) {
-    let fullURL = urlDatabase[req.params.shortURL].longURL;
+    let fullURL = urlDatabase[req.params.shortURL];
+    
     res.redirect(fullURL);
     //res.redirect(longURL);
+  } else {
+    res.status(404).send("shortURL does not exist"); // NOT Found
+
   }
 });
+
 /*
 Test edge cases such as:
 
