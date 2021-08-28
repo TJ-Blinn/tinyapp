@@ -1,17 +1,20 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+
 const app = express();
 const PORT = 8080; // default port 8080
 
 // set the view engine to ejs
 app.set("view engine", "ejs");
 
+// middleware Body-parser
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 // -------------------------------
-// use res.render to load up an ejs view file
-
 // index page
 app.get("/", function (req, res) {
   const mascots = [
@@ -66,3 +69,10 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' to front-end (we will replace this)
+});
+
+function generateRandomString() {}
