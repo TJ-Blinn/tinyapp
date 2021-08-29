@@ -16,10 +16,14 @@
         <p class="card-text"><a href="/u/<%= longURL %>"><%= longURL %></a></p>
       </div>
     <div class="card-footer text-muted"> 
-      <p class="card-text">Edit </p>
-      <label for="longURL">New URL:
-        <input class="form-control" type="text" name="longURL" placeholder= "/u/<%= shortURL %>"<%= longURL %> style="width: 300px; margin: 1em"></label>
-        <button type="submit" class="btn btn-primary">Submit</button>
+      <h3  class="card-text">Edit </div> </h3>
+      
+      <form action="/urls/<%= shortURL %>/update" method="POST">
+      <label for="longURL">New URL:</label>
+        <input type="text" name="longURL" placeholder= "<%= longURL %>">
+        <button type="submit" value="Submit">Submit</button>
+      </form>
+
     </div>
   </div>
   <!-- Bootstrap JS -->

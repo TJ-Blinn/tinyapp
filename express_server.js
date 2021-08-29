@@ -50,7 +50,7 @@ app.get("/urls", (req, res) => {
 
 // route handler for /urls_show
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
 
   res.render("urls_show", templateVars);
@@ -108,6 +108,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
   }
+  res.redirect("/urls");
+});
+
+// The edit function reassigns(updates) the longURL
+app.post("/urls/:shortURL/update", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+
   res.redirect("/urls");
 });
 
