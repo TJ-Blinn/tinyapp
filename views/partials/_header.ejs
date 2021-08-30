@@ -9,19 +9,16 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <td>
-          <% if(!username){ %>
-          <form method="POST" action="/urls/login">
+         <form method="POST" action="/urls/login">
             <label for="login">Login:</label>
             <input type="text" name="username" placeholder= "username">
             <button class="btn btn-dark" type="submit">Submit</button> 
           </form>
-          <% } else{ %>  
-
-            <% } %>
+          
         </td>
        
-        <td><p>Username: <%- username %></p></td>
-        <% if(!username){ %>
+        
+        
 
       </div>
     </div>
