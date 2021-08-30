@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 
 const app = express();
@@ -7,7 +8,8 @@ const PORT = 8080; // default port 8080
 // set the view engine to ejs
 app.set("view engine", "ejs");
 
-// middleware Body-parser
+// middleware cookie-parser 1st, Body-parser
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -37,20 +39,21 @@ app.get("/about", function (req, res) {
 });
 // -------------------------------
 
-// GET Route for form
+// route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_new", templateVars);
 });
 
-// route handler for /urls
+// route handler for /urls + cookies
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
-// route handler for /urls_show
+// route handler for /urls_show + cookies
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
 
   res.render("urls_show", templateVars);
@@ -104,7 +107,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   if (urlDatabase[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
   }
@@ -114,6 +117,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // The edit function reassigns(updates) the longURL
 app.post("/urls/:shortURL/update", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL;
+
+  res.redirect("/urls");
+});
+
+// The login route // cookies that have not been signed. POST -> sending to server (form with username)
+app.post("/urls/login", (req, res) => {
+  const username = req.body.username; // assigning what's coming from form into a variable (body == every input field)
+
+  res.cookie("username", username);
+  // req,body comes from values in form - NOT cookie. This is what sets the cookie.
 
   res.redirect("/urls");
 });
