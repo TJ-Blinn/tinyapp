@@ -16,6 +16,20 @@ const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
+
+// Users Object users.userRandomID = userRandomID;
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 // -------------------------------
 // index page
 app.get("/", function (req, res) {
@@ -143,9 +157,49 @@ app.get("/register", (req, res) => {
   res.render("pages/registration", { username: undefined });
 });
 
-// app.post("/register", (req, res) => {
-
+// Users Object
+// const users = {
+//   "userRandomID": {
+//     id: "userRandomID",
+//     email: "user@example.com",
+//     password: "purple-monkey-dinosaur"
+//   },
+//  "user2RandomID": {
+//     id: "user2RandomID",
+//     email: "user2@example.com",
+//     password: "dishwasher-funk"
+//   }
 // }
+// POST request ----------------------------------------------
+app.post("/register", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  let userObject = generateUserID(5);
+
+  // add a new user object to the global users object.
+  const user = {
+    id: userObject,
+    email: req.body.email,
+    password: req.body.password,
+  };
+
+  users[userObject] = user;
+  res.cookie("username", userObject); // set a user_id cookie containing the user's newly generated ID
+
+  console.log("Users -------------", users);
+  res.redirect("/urls");
+});
+
+// ------------------5 character string composed of characters picked randomly for userID
+const generateUserID = function (length) {
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+// -----------------------------------------
 
 /*
 Test edge cases such as:
