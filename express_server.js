@@ -138,6 +138,15 @@ app.post("/urls/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// register endpoint
+app.get("/register", (req, res) => {
+  res.render("pages/registration", { username: undefined });
+});
+
+// app.post("/register", (req, res) => {
+
+// }
+
 /*
 Test edge cases such as:
 
