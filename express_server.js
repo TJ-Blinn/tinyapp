@@ -131,6 +131,13 @@ app.post("/urls/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// The logout route
+app.post("/urls/logout", (req, res) => {
+  res.clearCookie("username"); // clear cookies (username) then redirect
+
+  res.redirect("/urls");
+});
+
 /*
 Test edge cases such as:
 
