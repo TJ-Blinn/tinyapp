@@ -27,8 +27,8 @@ const users = {
   },
   user2RandomID: {
     id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
+    email: "b@b.com",
+    password: "1111",
   },
 };
 
@@ -66,10 +66,11 @@ app.get("/urls/new", (req, res) => {
 
 // route handler for /urls + cookies
 app.get("/urls", (req, res) => {
-  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userName = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userName];
 
-  // console.log("user------", userObj);
+  console.log("user------XX", users);
+  console.log("user------YY", userObj);
 
   const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -150,9 +151,19 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 // The login route // cookies that have not been signed. POST -> sending to server (form with username)
 app.post("/urls/login", (req, res) => {
-  const user = req.body.user; // assigning what's coming from form into a variable (body == every input field)
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send("Email and Password required");
+  }
+  const user = emailCheck(req.body.email, users); // return a user with an email, else returns false
+  if (!user) {
+    return res.status(400).send("Email not found");
+  }
 
-  res.cookie("user", user);
+  if (user.password !== req.body.password) {
+    return res.status(400).send("Password is invalid");
+  }
+
+  res.cookie("user_id", user.id);
   // req,body comes from values in form - NOT cookie. This is what sets the cookie.
 
   res.redirect("/urls");
@@ -170,35 +181,40 @@ app.get("/register", (req, res) => {
   res.render("pages/registration", { user: undefined });
 });
 
-// Users Object
-// const users = {
-//   "userRandomID": {
-//     id: "userRandomID",
-//     email: "user@example.com",
-//     password: "purple-monkey-dinosaur"
-//   },
-//  "user2RandomID": {
-//     id: "user2RandomID",
-//     email: "user2@example.com",
-//     password: "dishwasher-funk"
-//   }
-// }
+// email verification function || check at point of registration and loggin in
+const emailCheck = (email, users) => {
+  for (const key in users) {
+    if (users[key].email === email) {
+      return users[key]; // user object
+    }
+  }
+  return false;
+};
+
 // POST request ----------------------------------------------
 app.post("/register", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  let userObject = generateUserID(5);
+  // console.log(req.body); // Log the POST request body to the console
+  let id = generateUserID(5);
+
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send("Email and Password required");
+  }
+  const user = emailCheck(req.body.email, users); // return a user with an email, else returns false
+  if (user) {
+    return res.status(400).send("Email already exists");
+  }
 
   // add a new user object to the global users object.
-  const user = {
-    id: userObject,
+  const userObject = {
+    id,
     email: req.body.email,
     password: req.body.password,
   };
+  users[id] = userObject;
+  res.cookie("user_id", id); // set a user_id cookie containing the user's newly generated ID
+  console.log("______________", users);
+  // Handle Registration error conditions: e-mail or password are empty strings
 
-  users[userObject] = user;
-  res.cookie("user", userObject); // set a user_id cookie containing the user's newly generated ID
-
-  console.log("Users -------------", users);
   res.redirect("/urls");
 });
 
