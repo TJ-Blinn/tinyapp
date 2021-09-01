@@ -22,8 +22,8 @@ const urlDatabase = {
 const users = {
   userRandomID: {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    email: "1@1.com",
+    password: "1",
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -31,29 +31,6 @@ const users = {
     password: "1111",
   },
 };
-
-// -------------------------------
-// index page
-app.get("/", function (req, res) {
-  const mascots = [
-    { name: "Sammy", organization: "DigitalOcean", birth_year: 2012 },
-    { name: "Tux", organization: "Linux", birth_year: 1996 },
-    { name: "Moby Dock", organization: "Docker", birth_year: 2013 },
-  ];
-  const tagline = "No programming concept is complete without a cute animal mascot.";
-
-  res.render("pages/index", {
-    // res.render() will look in a views folder for the view.
-    mascots: mascots,
-    tagline: tagline,
-  });
-});
-
-// about page
-app.get("/about", function (req, res) {
-  res.render("pages/about");
-});
-// -------------------------------
 
 // route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
@@ -65,12 +42,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 // route handler for /urls + cookies
-app.get("/urls", (req, res) => {
+app.get("/", (req, res) => {
   const userName = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userName];
-
-  console.log("user------XX", users);
-  console.log("user------YY", userObj);
 
   const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -107,7 +81,7 @@ app.post("/urls", (req, res) => {
   let randoURL = generateRandomString(5);
 
   urlDatabase[randoURL] = req.body.longURL; // when long url is entered on website, is received req.body.longURL; (url_new page === name)
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // 5 character string composed of characters picked randomly for shortURL
@@ -139,18 +113,28 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
   }
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // The edit function reassigns(updates) the longURL
 app.post("/urls/:shortURL/update", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL;
 
-  res.redirect("/urls");
+  res.redirect("/");
+});
+
+// route handler for /login
+app.get("/login", (req, res) => {
+  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userName];
+
+  const templateVars = { user: userObj, urls: urlDatabase };
+
+  res.render("pages/login", templateVars);
 });
 
 // The login route // cookies that have not been signed. POST -> sending to server (form with username)
-app.post("/urls/login", (req, res) => {
+app.post("/login", (req, res) => {
   if (!req.body.email || !req.body.password) {
     return res.status(400).send("Email and Password required");
   }
@@ -166,19 +150,19 @@ app.post("/urls/login", (req, res) => {
   res.cookie("user_id", user.id);
   // req,body comes from values in form - NOT cookie. This is what sets the cookie.
 
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // The logout route
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie("user"); // clear cookies (user) then redirect
+  res.clearCookie("user_id"); // clear cookies (user) then redirect
 
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // register endpoint
 app.get("/register", (req, res) => {
-  res.render("pages/registration", { user: undefined });
+  res.render("pages/register", { user: undefined });
 });
 
 // email verification function || check at point of registration and loggin in
@@ -196,6 +180,7 @@ app.post("/register", (req, res) => {
   // console.log(req.body); // Log the POST request body to the console
   let id = generateUserID(5);
 
+  // Handle Registration error conditions: e-mail or password are empty strings
   if (!req.body.email || !req.body.password) {
     return res.status(400).send("Email and Password required");
   }
@@ -203,7 +188,6 @@ app.post("/register", (req, res) => {
   if (user) {
     return res.status(400).send("Email already exists");
   }
-
   // add a new user object to the global users object.
   const userObject = {
     id,
@@ -213,9 +197,8 @@ app.post("/register", (req, res) => {
   users[id] = userObject;
   res.cookie("user_id", id); // set a user_id cookie containing the user's newly generated ID
   console.log("______________", users);
-  // Handle Registration error conditions: e-mail or password are empty strings
 
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // ------------------5 character string composed of characters picked randomly for userID
