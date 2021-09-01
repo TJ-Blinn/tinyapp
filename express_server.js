@@ -18,6 +18,7 @@ const urlDatabase = {
 };
 
 // Users Object users.userRandomID = userRandomID;
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -30,6 +31,7 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+
 // -------------------------------
 // index page
 app.get("/", function (req, res) {
@@ -55,19 +57,30 @@ app.get("/about", function (req, res) {
 
 // route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userName];
+
+  const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_new", templateVars);
 });
 
 // route handler for /urls + cookies
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userName];
+
+  // console.log("user------", userObj);
+
+  const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 // route handler for /urls_show + cookies
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userName];
+
+  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
 
   res.render("urls_show", templateVars);
@@ -137,9 +150,9 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 // The login route // cookies that have not been signed. POST -> sending to server (form with username)
 app.post("/urls/login", (req, res) => {
-  const username = req.body.username; // assigning what's coming from form into a variable (body == every input field)
+  const user = req.body.user; // assigning what's coming from form into a variable (body == every input field)
 
-  res.cookie("username", username);
+  res.cookie("user", user);
   // req,body comes from values in form - NOT cookie. This is what sets the cookie.
 
   res.redirect("/urls");
@@ -147,14 +160,14 @@ app.post("/urls/login", (req, res) => {
 
 // The logout route
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie("username"); // clear cookies (username) then redirect
+  res.clearCookie("user"); // clear cookies (user) then redirect
 
   res.redirect("/urls");
 });
 
 // register endpoint
 app.get("/register", (req, res) => {
-  res.render("pages/registration", { username: undefined });
+  res.render("pages/registration", { user: undefined });
 });
 
 // Users Object
@@ -183,7 +196,7 @@ app.post("/register", (req, res) => {
   };
 
   users[userObject] = user;
-  res.cookie("username", userObject); // set a user_id cookie containing the user's newly generated ID
+  res.cookie("user", userObject); // set a user_id cookie containing the user's newly generated ID
 
   console.log("Users -------------", users);
   res.redirect("/urls");
