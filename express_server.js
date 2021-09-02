@@ -13,8 +13,8 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 // Users Object users.userRandomID = userRandomID;
@@ -34,8 +34,12 @@ const users = {
 
 // route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
-  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
-  const userObj = users[userName];
+  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userID];
+
+  if (!userID) {
+    return res.redirect("/login");
+  }
 
   const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_new", templateVars);
@@ -43,8 +47,8 @@ app.get("/urls/new", (req, res) => {
 
 // route handler for /urls + cookies
 app.get("/", (req, res) => {
-  const userName = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
-  const userObj = users[userName];
+  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userID];
 
   const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -52,8 +56,8 @@ app.get("/", (req, res) => {
 
 // route handler for /urls_show + cookies
 app.get("/urls/:shortURL", (req, res) => {
-  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
-  const userObj = users[userName];
+  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userID];
 
   const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
@@ -79,8 +83,11 @@ app.get("/hello", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   let randoURL = generateRandomString(5);
+  const longURL = req.body.longURL;
+  const userID = req.cookies["user_id"];
 
-  urlDatabase[randoURL] = req.body.longURL; // when long url is entered on website, is received req.body.longURL; (url_new page === name)
+  urlDatabase[randoURL] = {longURL, userID};
+  // urlDatabase[randoURL] = req.body.longURL; // when long url is entered on website, is received req.body.longURL; (url_new page === name)
   res.redirect("/");
 });
 
@@ -97,12 +104,10 @@ const generateRandomString = function (length) {
 
 // requests to the endpoint "/u/:shortURL" will redirect to its longURL
 app.get("/u/:shortURL", (req, res) => {
-  console.log(req.params);
-  if (urlDatabase[req.params.shortURL]) {
-    let fullURL = urlDatabase[req.params.shortURL];
-
-    res.redirect(fullURL);
-    //res.redirect(longURL);
+  const urlObj = urlDatabase[req.params.shortURL];
+  // console.log("***********", req.params, urlObj);
+  if (urlObj) {
+    return res.redirect(urlObj.longURL);
   } else {
     res.status(404).send("shortURL does not exist"); // NOT Found adds 404 to res, then chains to send message to browser
   }
@@ -125,8 +130,8 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 // route handler for /login
 app.get("/login", (req, res) => {
-  const userName = req.cookies["user"]; // currently logged in user ID. In the cookie that was set when user logged in.
-  const userObj = users[userName];
+  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userObj = users[userID];
 
   const templateVars = { user: userObj, urls: urlDatabase };
 
@@ -136,20 +141,20 @@ app.get("/login", (req, res) => {
 // The login route // cookies that have not been signed. POST -> sending to server (form with username)
 app.post("/login", (req, res) => {
   if (!req.body.email || !req.body.password) {
-    return res.status(400).send("Email and Password required");
+    return res.status(403).send("Email and Password required");
   }
   const user = emailCheck(req.body.email, users); // return a user with an email, else returns false
   if (!user) {
-    return res.status(400).send("Email not found");
+    return res.status(403).send("Email not found");
   }
 
   if (user.password !== req.body.password) {
-    return res.status(400).send("Password is invalid");
+    return res.status(403).send("Password is invalid");
   }
 
   res.cookie("user_id", user.id);
   // req,body comes from values in form - NOT cookie. This is what sets the cookie.
-
+  
   res.redirect("/");
 });
 
