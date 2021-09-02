@@ -14,10 +14,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
+  rth03e: { longURL: "http://msn.com", userID: "userRandomID"}
 };
 
-// Users Object users.userRandomID = userRandomID;
+// function returns the URLs where the userID is equal to the id of the currently logged-in user.
+const urlsForUser = function (id) {
+  const userURLS = {};
+  const keys = Object.keys(urlDatabase);
+  
+  for (const key of keys) {
+    if (urlDatabase[key].userID === id) {
+      userURLS[key] = urlDatabase[key]; // assigning key value pair into our empty object | value of the key becomes the value inside urlDatabase
+    }
+  }
+  //console.log("ID++++++++++++++", id);
+  return userURLS;
+};
 
 const users = {
   userRandomID: {
@@ -49,8 +62,13 @@ app.get("/urls/new", (req, res) => {
 app.get("/", (req, res) => {
   const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
+  const userURLS = urlsForUser(userID);
+  if (!userID) {
+    return res.status(400).send("Must be logged in to access this page. Please login or Register.");
 
-  const templateVars = { user: userObj, urls: urlDatabase };
+  }
+
+  const templateVars = { user: userObj, urls: userURLS };
   res.render("urls_index", templateVars);
 });
 
@@ -58,8 +76,9 @@ app.get("/", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
+  const userURLS = urlsForUser(userID);
 
-  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: userURLS[req.params.shortURL] };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
 
   res.render("urls_show", templateVars);
@@ -114,17 +133,33 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  // console.log(req.body);
-  if (urlDatabase[req.params.shortURL]) {
-    delete urlDatabase[req.params.shortURL];
+  const userID = req.cookies["user_id"];
+  const userURLS = urlsForUser(userID);
+
+  if (!userID) {
+    return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
+  }
+
+  if (userURLS[req.params.shortURL]) {
+    delete userURLS[req.params.shortURL];
   }
   res.redirect("/");
 });
 
 // The edit function reassigns(updates) the longURL
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
 
+  const userID = req.cookies["user_id"];
+  const userURLS = urlsForUser(userID);
+
+  if (!userID) {
+    return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
+  }
+
+  if (userURLS[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+  }
+  
   res.redirect("/");
 });
 
