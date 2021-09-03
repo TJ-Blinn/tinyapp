@@ -1,10 +1,12 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require('bcryptjs');
+const salt = bcrypt.genSaltSync(10);
+// const {emailCheck, urlsForUser, generateRandomString } = require("./helper")
 
 const app = express();
 const PORT = 8080; // default port 8080
-
 // set the view engine to ejs
 app.set("view engine", "ejs");
 
@@ -175,15 +177,19 @@ app.get("/login", (req, res) => {
 
 // The login route // cookies that have not been signed. POST -> sending to server (form with username)
 app.post("/login", (req, res) => {
-  if (!req.body.email || !req.body.password) {
+  const {email, password} = req.body;
+
+  if (!email || !password) {
     return res.status(403).send("Email and Password required");
   }
-  const user = emailCheck(req.body.email, users); // return a user with an email, else returns false
+  const user = emailCheck(email, users); // return a user with an email, else returns false
   if (!user) {
     return res.status(403).send("Email not found");
   }
 
-  if (user.password !== req.body.password) {
+  console.log(bcrypt.hashSync(password, salt));
+  console.log(user.password);
+  if (!bcrypt.compareSync(password, user.password)) { // compareSynch takes in 2 params: unhashed pwd, hashed pwd
     return res.status(403).send("Password is invalid");
   }
 
@@ -217,9 +223,11 @@ const emailCheck = (email, users) => {
 
 // POST request ----------------------------------------------
 app.post("/register", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
+  
   let id = generateUserID(5);
-
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, salt);
+    
   // Handle Registration error conditions: e-mail or password are empty strings
   if (!req.body.email || !req.body.password) {
     return res.status(400).send("Email and Password required");
@@ -232,14 +240,15 @@ app.post("/register", (req, res) => {
   const userObject = {
     id,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPassword,
   };
+  // adding user to the users object
   users[id] = userObject;
   res.cookie("user_id", id); // set a user_id cookie containing the user's newly generated ID
-  console.log("______________", users);
-
+  
   res.redirect("/");
 });
+
 
 // ------------------5 character string composed of characters picked randomly for userID
 const generateUserID = function (length) {
@@ -251,13 +260,4 @@ const generateUserID = function (length) {
   }
   return result;
 };
-// -----------------------------------------
 
-/*
-Test edge cases such as:
-
-    What would happen if a client requests a non-existent shortURL?
-    What happens to the urlDatabase when the server is restarted?
-    What type of status code do our redirects have? What does this status code mean?
-
-*/
