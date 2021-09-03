@@ -1,5 +1,6 @@
 const express = require("express");
-const cookieParser = require("cookie-parser");
+//const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
@@ -11,8 +12,13 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 // middleware cookie-parser 1st, Body-parser
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
+
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -30,7 +36,6 @@ const urlsForUser = function (id) {
       userURLS[key] = urlDatabase[key]; // assigning key value pair into our empty object | value of the key becomes the value inside urlDatabase
     }
   }
-  //console.log("ID++++++++++++++", id);
   return userURLS;
 };
 
@@ -49,7 +54,8 @@ const users = {
 
 // route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userID = req.session["user_id"];
+  // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
 
   if (!userID) {
@@ -62,7 +68,8 @@ app.get("/urls/new", (req, res) => {
 
 // route handler for /urls + cookies
 app.get("/", (req, res) => {
-  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userID = req.session.user_id; // currently logged in user ID. In the cookie that was set when user logged in.
+  console.log("____________", userID);
   const userObj = users[userID];
   const userURLS = urlsForUser(userID);
   if (!userID) {
@@ -76,11 +83,11 @@ app.get("/", (req, res) => {
 
 // route handler for /urls_show + cookies
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userID = req.session["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
   const userURLS = urlsForUser(userID);
 
-  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: userURLS[req.params.shortURL] };
+  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: userURLS[req.params.shortURL].longURL };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
 
   res.render("urls_show", templateVars);
@@ -102,10 +109,10 @@ app.get("/hello", (req, res) => {
 
 // POST request
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  // console.log(req.body); // Log the POST request body to the console
   let randoURL = generateRandomString(5);
   const longURL = req.body.longURL;
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
 
   urlDatabase[randoURL] = {longURL, userID};
   // urlDatabase[randoURL] = req.body.longURL; // when long url is entered on website, is received req.body.longURL; (url_new page === name)
@@ -135,7 +142,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const userURLS = urlsForUser(userID);
 
   if (!userID) {
@@ -151,7 +158,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // The edit function reassigns(updates) the longURL
 app.post("/urls/:shortURL/update", (req, res) => {
 
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const userURLS = urlsForUser(userID);
 
   if (!userID) {
@@ -167,7 +174,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 // route handler for /login
 app.get("/login", (req, res) => {
-  const userID = req.cookies["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
+  const userID = req.session["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
 
   const templateVars = { user: userObj, urls: urlDatabase };
@@ -187,13 +194,14 @@ app.post("/login", (req, res) => {
     return res.status(403).send("Email not found");
   }
 
-  console.log(bcrypt.hashSync(password, salt));
-  console.log(user.password);
+  // console.log(bcrypt.hashSync(password, salt));
+  // console.log(user.password);
   if (!bcrypt.compareSync(password, user.password)) { // compareSynch takes in 2 params: unhashed pwd, hashed pwd
     return res.status(403).send("Password is invalid");
   }
 
-  res.cookie("user_id", user.id);
+  req.session["user_id"]  = user.id;
+  //res.session("user_id", user.id);
   // req,body comes from values in form - NOT cookie. This is what sets the cookie.
   
   res.redirect("/");
@@ -201,8 +209,8 @@ app.post("/login", (req, res) => {
 
 // The logout route
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie("user_id"); // clear cookies (user) then redirect
-
+  //res.clearCookie("user_id"); // clear cookies (user) then redirect
+  req.session = null; // clear session by equating null
   res.redirect("/");
 });
 
@@ -244,7 +252,7 @@ app.post("/register", (req, res) => {
   };
   // adding user to the users object
   users[id] = userObject;
-  res.cookie("user_id", id); // set a user_id cookie containing the user's newly generated ID
+  req.session["user_id"] = id; // set a user_id cookie containing the user's newly generated ID
   
   res.redirect("/");
 });
