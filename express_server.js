@@ -4,8 +4,7 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
-// const {getUserByEmail, urlsForUser, generateRandomString } = require("./helper")
-const getUserByEmail = require("./helpers");
+const {getUserByEmail, urlsForUser, generateRandomString } = require("./helpers");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -28,17 +27,17 @@ const urlDatabase = {
 };
 
 // function returns the URLs where the userID is equal to the id of the currently logged-in user.
-const urlsForUser = function (id) {
-  const userURLS = {};
-  const keys = Object.keys(urlDatabase);
+// const urlsForUser = function (id) {
+//   const userURLS = {};
+//   const keys = Object.keys(urlDatabase);
   
-  for (const key of keys) {
-    if (urlDatabase[key].userID === id) {
-      userURLS[key] = urlDatabase[key]; // assigning key value pair into our empty object | value of the key becomes the value inside urlDatabase
-    }
-  }
-  return userURLS;
-};
+//   for (const key of keys) {
+//     if (urlDatabase[key].userID === id) {
+//       userURLS[key] = urlDatabase[key]; // assigning key value pair into our empty object | value of the key becomes the value inside urlDatabase
+//     }
+//   }
+//   return userURLS;
+// };
 
 const users = {
   userRandomID: {
@@ -72,7 +71,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id; // currently logged in user ID. In the cookie that was set when user logged in.
   console.log("____________", userID);
   const userObj = users[userID];
-  const userURLS = urlsForUser(userID);
+  const userURLS = urlsForUser(userID, urlDatabase);
   // if (!userID) {
   //   return res.status(400).send("Must be logged in to access this page. Please login or Register.");
 
@@ -92,7 +91,7 @@ app.post("/urls/logout", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"]; // currently logged in user ID. In the cookie that was set when user logged in.
   const userObj = users[userID];
-  const userURLS = urlsForUser(userID);
+  const userURLS = urlsForUser(userID, urlDatabase);
 
   const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: userURLS[req.params.shortURL].longURL };
   // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
@@ -122,15 +121,15 @@ app.post("/urls", (req, res) => {
 });
 
 // 5 character string composed of characters picked randomly for shortURL
-const generateRandomString = function (length) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
+// const generateRandomString = function (length) {
+//   let result = "";
+//   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//   const charactersLength = characters.length;
+//   for (let i = 0; i < length; i++) {
+//     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+//   }
+//   return result;
+// };
 
 // URL in browser "/u/:shortURL" will redirect to its longURL
 app.get("/u/:shortURL", (req, res) => {
@@ -145,7 +144,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
-  const userURLS = urlsForUser(userID);
+  const userURLS = urlsForUser(userID, urlDatabase);
 
   if (!userID) {
     return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
@@ -159,7 +158,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
 
   const userID = req.session["user_id"];
-  const userURLS = urlsForUser(userID);
+  const userURLS = urlsForUser(userID, urlDatabase);
 
   if (!userID) {
     return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
