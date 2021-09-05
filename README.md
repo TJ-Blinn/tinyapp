@@ -44,5 +44,6 @@ This project was created and published by me as part of my learnings at Lighthou
 | Function Names | Description |
 | :---: | :--- |
 | urlsForUser | This returns URLs on the /urls page and only displays where userID matches and is confirmed as logged in. Use cURL to confirm that if a user is not logged in, they cannot edit or delete URLs |
-| generateRandomString | A function helper to create a 5 character string composed of characters picked randomly for the userID in the database |
+| generateRandomString | A function helper to create a 5 character string composed of characters picked randomly for the object in the database containing user information |
 | emailCheck |This is an email lookup helper function used in POST /register route to handle to confirm that users are entering a valid email address on registration form |
+| generateUserID | A function helper to create a 5 character string composed of characters picked randomly for the userID in the database |
