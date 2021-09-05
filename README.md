@@ -4,28 +4,17 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Purpose
 
-**_BEWARE:_ This library was published for learning purposes. It is _not_ intended for use in production-grade software.**
+**_BEWARE:_ This app was designed for learning purposes. It is strictly intended for use as an exercise.**
 
 This project was created and published by me as part of my learnings at Lighthouse Labs.
 
-## Usage
-
-**Install it:**
-
-`npm instal ...`
-
-**Require it:**
-
-`const _ = require('@tj-blinn/...');`
-
-**Call it:**
-
-`const results = ...`
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Screenshot of TinyApp login"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Login_screenshot.png)
+!["Screenshot of TinyApp homepage"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_homepage_screenshot.png)
+!["Screenshot of TinyApp edit"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Edit_Page_screenshot.png)
+!["Screenshot of TinyApp edit"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Create_TinyURL_Screenshot.png)
 
 ## Dependencies
 
