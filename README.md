@@ -12,9 +12,13 @@ This project was created and published by me as part of my learnings at Lighthou
 ## Final Product
 
 !["Screenshot of TinyApp login"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Login_screenshot.png)
+
 !["Screenshot of TinyApp homepage"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_homepage_screenshot.png)
+
 !["Screenshot of TinyApp edit"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Edit_Page_screenshot.png)
+
 !["Screenshot of TinyApp edit"](https://raw.githubusercontent.com/TJ-Blinn/tinyapp/main/docs/TinyApp_Create_TinyURL_Screenshot.png)
+
 
 ## Dependencies
 
