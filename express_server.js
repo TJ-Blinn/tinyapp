@@ -70,11 +70,19 @@ app.post("/urls/logout", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
   const userObj = users[userID];
-  const userURLS = urlsForUser(userID, urlDatabase);
-  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: userURLS[req.params.shortURL].longURL };
-  // Use the shortURL from the route parameter to lookup it's associated longURL from the urlDatabase
-
-  res.render("urls_show", templateVars);
+  // const userURLS = urlsForUser(userID, urlDatabase);
+  const shortURL = req.params.shortURL;
+    
+  if (!urlDatabase[shortURL]) { // shortURL does not exist in database, otherwise exit with res.send
+    return res.status(400).send("This shortURL does not exist");
+  }
+  
+  if (urlDatabase[shortURL].userID !== userID) { // ownership of url established
+    return res.status(400).send("This shortURL does not belong to you");
+  }
+  // urlDatabase[shortURL] must exist if it reaches this point, where we can now define templateVars.
+  const templateVars = { user: userObj, shortURL: shortURL, longURL: urlDatabase[shortURL].longURL };
+  return res.render("urls_show", templateVars);
 });
 
 app.listen(PORT, () => {
@@ -99,18 +107,22 @@ app.post("/urls", (req, res) => {
 
 // URL in browser "/u/:shortURL" will redirect to its longURL
 app.get("/u/:shortURL", (req, res) => {
-  const urlObj = urlDatabase[req.params.shortURL];
-  if (urlObj) {
-    return res.redirect(urlObj.longURL);
-  } else {
-    res.status(404).send("shortURL does not exist"); // NOT Found adds 404 to res, then chains to send message to browser
+  // const userID = req.session["user_id"];
+  const shortURL = req.params.shortURL;
+  const urlObj = urlDatabase[shortURL];
+
+  if (!urlDatabase[shortURL]) { // shortURL does not exist in database, otherwise exit with res.send
+    return res.status(400).send("This shortURL does not exist");
   }
+  
+  return res.redirect(urlObj.longURL);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
+  const shortURL = req.params.shortURL;
   
-  if (!userID) {
+  if (!userID && urlDatabase[shortURL].userID !== userID) { // ownership of url established
     return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
   } else {
     delete urlDatabase[req.params.shortURL];
@@ -151,10 +163,10 @@ app.post("/login", (req, res) => {
   }
   const user = getUserByEmail(email, users); // return a user with an email, else returns false
   if (!user) {
-    return res.status(403).send("Email not found");
+    return res.status(403).send("Email or Password not found");
   }
   if (!bcrypt.compareSync(password, user.password)) { // compareSynch takes in 2 params: unhashed pwd, hashed pwd
-    return res.status(403).send("Password is invalid");
+    return res.status(403).send("Email or Passwordis invalid");
   }
 
   req.session["user_id"]  = user.id;
@@ -168,11 +180,9 @@ app.get("/register", (req, res) => {
 
 // POST register
 app.post("/register", (req, res) => {
-  let id = generateUserID(5);
   const password = req.body.password;
   const email = req.body.email;
-  const hashedPassword = bcrypt.hashSync(password, salt);
-    
+      
   // Handle Registration error conditions: e-mail or password are empty strings
   if (!email || !password) {
     return res.status(400).send("Email and Password required");
@@ -182,6 +192,8 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Email already exists");
   }
   // add a new user object to the global users object.
+  let id = generateUserID(5);
+  const hashedPassword = bcrypt.hashSync(password, salt);
   const userObject = {
     id,
     email: email,
