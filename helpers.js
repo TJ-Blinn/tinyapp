@@ -3,7 +3,7 @@
 const urlsForUser = function (id, urlDb) {
 // urlDb === urlDatabase added as 2nd argument here. It is calling on the urlDabase from the express_sever file,
 // containing dyniamically added urls from browser.
-// Accessing what is passed into when Ic all the function.
+// Accessing what is passed into when I call the function.
   
   const userURLS = {};
   const keys = Object.keys(urlDb);

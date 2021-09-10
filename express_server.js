@@ -36,6 +36,19 @@ const users = {
 };
 
 // route handler for urls/new - GET Route for form + cookies
+app.get("/", (req, res) => {
+  const userID = req.session["user_id"];
+  // currently logged in user ID. In the cookie that was set when user logged in.
+  
+  if (!userID) {
+    return res.redirect("/login");
+  } else {
+    res.redirect("/urls");
+  }
+  
+});
+
+// route handler for urls/new - GET Route for form + cookies
 app.get("/urls/new", (req, res) => {
   const userID = req.session["user_id"];
   // currently logged in user ID. In the cookie that was set when user logged in.
@@ -96,12 +109,19 @@ app.get("/urls.json", (req, res) => {
 
 // POST request is received to /urls
 app.post("/urls", (req, res) => {
+  const sessionKey = req.session["user_id"];// string of user ID from cookie
+  const user = users[sessionKey]; //  user === a value within our users database
+  
+  if (!sessionKey || !user) { // ownership of url established
+    return res.status(400).send("Must be logged in to access this page. Please login or Register.\n");
+  }
   let randoURL = generateRandomString(5);
   const longURL = req.body.longURL;
-  const userID = req.session["user_id"];
 
+  const userID = user.id;
   urlDatabase[randoURL] = {longURL, userID};
   // when long url is entered on website, is received req.body.longURL; (url_new page === name)
+
   res.redirect("/urls");
 });
 
